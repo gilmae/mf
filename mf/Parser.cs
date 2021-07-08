@@ -40,7 +40,6 @@ namespace mf
 
         private void walk(IElement node, Uri baseUrl)
         {
-            string nodeName = node.NodeName.ToLower();
             Item priorItem = null;
             Item curItem = null;
 
@@ -61,6 +60,10 @@ namespace mf
                 if (this.curItem == null)
                 {
                     this.curdata.Items.Add(curItem);
+                }
+                else
+                {
+                    this.curItem.HasNestedMicroformats = true;
                 }
 
                 priorItem = this.curItem;

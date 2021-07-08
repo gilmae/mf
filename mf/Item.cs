@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 
+[assembly: InternalsVisibleTo("mf.Tests")]
 namespace mf
 {
     public record Item
@@ -12,6 +14,7 @@ namespace mf
         internal bool HasPProperties { get; set; }
         internal bool HasUProperties { get; set; }
         internal bool HasEProperties { get; set; }
+        internal bool HasNestedMicroformats { get; set; }
     }
 
     public record Photo
