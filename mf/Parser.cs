@@ -85,28 +85,8 @@ namespace mf
                 switch (class_parts[0])
                 {
                     case "p":
-
-                        value = node.ParseValueClassPattern();
-                        if (!string.IsNullOrEmpty(value))
-                        {
-                            break;
-                        }
-                        if ((nodeName == "abbr" || nodeName == "link") && !string.IsNullOrEmpty(node.Attributes["title"].Value))
-                        {
-                            value = node.Attributes["title"].Value.Trim();
-                        }
-                        else if ((nodeName == "data" || nodeName == "input") && !string.IsNullOrEmpty(node.Attributes["value"].Value))
-                        {
-                            value = node.Attributes["value"].Value.Trim();
-                        }
-                        else if ((nodeName == "img" || nodeName == "area") && !string.IsNullOrEmpty(node.Attributes["alt"].Value))
-                        {
-                            value = node.Attributes["alt"].Value.Trim();
-                        }
-                        else
-                        {
-                            value = node.GetTextValue(baseUrl);
-                        }
+                        value = node.ParsePProperty(baseUrl);
+                       
 
                         break;
 
@@ -129,5 +109,7 @@ namespace mf
 
             return classAttr.NodeValue.Split(' ');
         }
+
+        
     }
 }
