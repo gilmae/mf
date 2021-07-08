@@ -11,7 +11,7 @@ namespace mf
     public static class IElementExtensions
     {
         private readonly static Regex rootClassNames = new Regex($"^h-([a-z0-9]+-)?[a-z]+(-[a-z]+)*$");
-        private readonly static Regex propertyClassNames = new Regex($"^(p|u|dt|e)-([a-z0-9]+-)?[a-z]+(-[a-z]+)*$");
+        private readonly static Regex propertyClassNames = new Regex($"^(p|u|dt|e)-([a-z0-9-]+)?$");
 
         public static bool HasAttribute(this IElement node, string attr)
         {
@@ -67,6 +67,34 @@ namespace mf
                 }
             });
             return node.TextContent.Trim();
+        }
+
+        public static (string, string) ParseEProperty(this IElement node, Uri baseUrl)
+        {
+            if (node == null)
+            {
+                return ("", "");
+            }
+
+            var htmlNode = node.Clone() as IElement;
+            htmlNode.Traverse((INode parent, INode el) =>
+            {
+                if (el.NodeType == NodeType.Element)
+                {
+                    IElement element = el as IElement;
+                    foreach (var attr in element.Attributes)
+                    {
+                        if (new[] { "src", "href" }.Contains(attr.Name) &&  Uri.IsWellFormedUriString(attr.Value, UriKind.Relative))
+                        {
+                            attr.Value = attr.Value.MakeAbsolute(baseUrl);
+                        }
+
+                    }
+                }
+            });
+            string v = node.GetTextValue(baseUrl);
+            
+            return (System.Web.HttpUtility.HtmlDecode(v.Trim()), System.Web.HttpUtility.HtmlDecode(htmlNode.InnerHtml.Trim()));
         }
 
         public static string ParseImpliedName(this IElement node, Uri baseUrl)
@@ -136,6 +164,59 @@ namespace mf
             }
         }
 
+        public static (string, string) ParseUProperty(this IElement node, Uri baseUrl)
+        {
+            string nodeName = node.NodeName.ToLower();
+            string value = node.ParseValueClassPattern();
+            string name = "";
+
+            if ((nodeName == "a" || nodeName == "area" || nodeName == "link")
+                && !string.IsNullOrEmpty(node.Attributes["href"]?.Value))
+            {
+                value = node.Attributes["href"].Value;
+            }
+            else if (nodeName == "img" && node.HasAttribute("src"))
+            {
+                value = node.Attributes["src"].Value;
+                name = node.Attributes["alt"]?.Value;
+            }
+            else if (new[] { "audio", "video", "iframe", "source" }.Contains(nodeName) && node.HasAttribute("src"))
+            {
+                value = node.Attributes["src"].Value;
+            }
+            else if (nodeName == "video" && node.HasAttribute("poster"))
+            {
+                value = node.Attributes["poster"].Value;
+            }
+            else if (nodeName == "object" && node.HasAttribute("data"))
+            {
+                value = node.Attributes["data"].Value;
+            }
+            else if (nodeName == "object" && node.HasAttribute("data"))
+            {
+                value = node.Attributes["data"].Value;
+            }
+            else if (!string.IsNullOrEmpty(value))
+            {
+                // Found Value Class Pattern
+            }
+            else if (nodeName == "abbr" && node.HasAttribute("title"))
+            {
+                value = node.Attributes["title"].Value;
+            }
+            else if (new[] { "data", "input" }.Contains(nodeName) && node.HasAttribute("value"))
+            {
+                value = node.Attributes["value"].Value;
+            }
+            else
+            {
+                value = node.GetTextValue(baseUrl);
+            }
+
+            return (value.MakeAbsolute(baseUrl), name);
+
+        }
+
         public static string ParseValueClassPattern(this IElement node)
         {
             if (node == null) {
@@ -203,58 +284,7 @@ namespace mf
             return string.Join("", values.ToArray().Select(v => Regex.Replace(Regex.Replace(v, @"\s{2,}", " "), @">\s+<", "><").Trim()));
         }
 
-        public static (string,string) ParseUProperty(this IElement node, Uri baseUrl)
-        {
-            string nodeName = node.NodeName.ToLower();
-            string value = node.ParseValueClassPattern();
-               string name = "";
-
-            if ((nodeName == "a" || nodeName == "area" || nodeName == "link")
-                && !string.IsNullOrEmpty(node.Attributes["href"]?.Value))
-            {
-                value = node.Attributes["href"].Value;
-            }
-            else if (nodeName == "img" && node.HasAttribute("src"))
-            {
-                value = node.Attributes["src"].Value;
-                name = node.Attributes["alt"]?.Value;
-            }
-            else if (new[] {"audio", "video", "iframe", "source"}.Contains(nodeName) && node.HasAttribute("src"))
-            {
-                value = node.Attributes["src"].Value;
-            }
-            else if (nodeName == "video" && node.HasAttribute("poster"))
-            {
-                value = node.Attributes["poster"].Value;
-            }
-            else if (nodeName == "object" && node.HasAttribute("data"))
-            {
-                value = node.Attributes["data"].Value;
-            }
-            else if (nodeName == "object" && node.HasAttribute("data"))
-            {
-                value = node.Attributes["data"].Value;
-            }
-            else if (!string.IsNullOrEmpty(value))
-            {
-                // Found Value Class Pattern
-            }
-            else if (nodeName == "abbr" && node.HasAttribute("title"))
-            {
-                value = node.Attributes["title"].Value;
-            }
-            else if (new[] {"data","input"}.Contains(nodeName) && node.HasAttribute("value"))
-            {
-                value = node.Attributes["value"].Value;
-            }
-            else
-            {
-                value = node.GetTextValue(baseUrl);
-            }
-
-            return (value.MakeAbsolute(baseUrl), name);
-            
-        }
+        
     }
 }
 

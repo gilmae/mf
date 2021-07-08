@@ -23,6 +23,12 @@ namespace mf
         public string Value { get; set; }
     }
 
+    public record EmbeddedMarkup
+    {
+        public string Html { get; set; }
+        public string Value { get; set; }
+    }
+
     public static class PhotoExtensions
     {
         public static bool AreEquivalent(this Photo photo, Photo other)

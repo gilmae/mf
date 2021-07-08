@@ -92,10 +92,12 @@ namespace mf
             var propertyClasses = node.GetPropertyClasses();
             foreach (string propertyClass in propertyClasses)
             {
+                // TODO Handle vendor prefixes
                 string[] class_parts = propertyClass.Split('-');
                 string name = class_parts[1];
                 string value = "";
                 string alt = "";
+                object obj = null;
                 switch (class_parts[0])
                 {
                     case "p":
@@ -103,7 +105,7 @@ namespace mf
                         {
                             this.curItem.HasPProperties = true;
                         }
-                        value = node.ParsePProperty(baseUrl);
+                        obj = node.ParsePProperty(baseUrl);
                         break;
                     case "u":
                         if (this.curItem != null && !this.curItem.HasUProperties)
@@ -111,32 +113,42 @@ namespace mf
                             this.curItem.HasUProperties = true;
                         }
                         (value, alt) = node.ParseUProperty(baseUrl);
-                            break;
+                        if (string.IsNullOrEmpty(alt))
+                        {
+                            obj = value;
+                        }
+                        else
+                        {
+                            obj = new Photo
+                            {
+                                Alt = alt,
+                                Value = value
+                            };
+                        }
+                        break;
                     case "e":
                         if (this.curItem != null && !this.curItem.HasEProperties)
                         {
                             this.curItem.HasEProperties = true;
                         }
-                        
+                        (value,alt ) = ("", "");
+                        if (string.IsNullOrEmpty(alt))
+                        {
+                            obj = value;
+                        }
+                        else
+                        {
+                            obj = new EmbeddedMarkup
+                            {
+                                Html = alt,
+                                Value = value
+                            };
+                        }
                         break;
 
                 }
                 if (this.curItem != null)
                 {
-                    object obj = null;
-                    if (string.IsNullOrEmpty(alt))
-                    {
-                        obj = value;
-                    }
-                    else
-                    {
-                        obj = new Photo
-                        {
-                            Alt = alt,
-                            Value = value
-                        };
-                    }
-
                     if (!this.curItem.Properties.ContainsKey(name))
                     {
                         this.curItem.Properties[name] = new[] { obj };
