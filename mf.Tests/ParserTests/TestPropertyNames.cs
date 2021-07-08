@@ -8,6 +8,16 @@ namespace mf.Tests.ParserTests
     public class TestPropertyNames
     {
         [Fact]
+        void If_Id_IsPresent_Set_ItemId()
+        {
+            Parser p = new Parser();
+            var doc = p.Parse("<article id=\"AnArticle\" class=\"h-entry\"><h1 class=\"p-name\">Hello</h1></article>", new Uri("http://localhost"));
+
+            Assert.Equal("AnArticle", doc.Items.First().Id);
+
+        }
+
+        [Fact]
         public void Finds_P_Properties()
         {
             Parser p = new Parser();

@@ -57,6 +57,11 @@ namespace mf
                     Properties = new Dictionary<string, object[]>()
                 };
 
+                if (!string.IsNullOrEmpty(node.Id))
+                {
+                    curItem.Id = node.Id;
+                }
+
                 if (this.curItem == null)
                 {
                     this.curdata.Items.Add(curItem);

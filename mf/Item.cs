@@ -5,6 +5,7 @@ namespace mf
 {
     public record Item
     {
+        public string Id { get; set; }
         public string[] Type { get; set; }
         public Dictionary<string, object[]> Properties { get; set; }
     }
