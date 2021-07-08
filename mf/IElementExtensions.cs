@@ -187,6 +187,44 @@ namespace mf
             return null;
         }
 
+        public static string ParseImpliedUrl(this IElement node, Uri baseUri)
+        {
+            Func<IElement, string> specialCaseEvaluator = (IElement el) =>
+            {
+                string nodeName = el.NodeName.ToLower();
+                if (new[] { "a", "area" }.Contains(nodeName))
+                {
+                    return el.GetAttribute("href");
+                }
+                return "";
+            };
+
+            string url = specialCaseEvaluator(node);
+
+            if (url == "" && node.Children.Length == 1)
+            {
+                var child = node.Children.First();
+                if (child.GetRootClasses().Count() == 0)
+                {
+                    url = specialCaseEvaluator(child);
+                }
+                if (url == "" && child.Children.Length == 1 && child.Children.First().GetRootClasses().Count() == 0)
+                {
+                    var grandchild = child.Children.First();
+                    url = specialCaseEvaluator(grandchild);
+                }
+            }
+
+            if (!string.IsNullOrEmpty(url))
+            {
+                if (url.IsRelative())
+                {
+                    url = url.MakeAbsolute(baseUri);
+                }
+            }
+            return url.Trim();
+        }
+
         public static string ParsePProperty(this IElement node, Uri baseUrl)
         {
             string nodeName = node.NodeName.ToLower();

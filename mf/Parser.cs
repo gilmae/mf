@@ -95,6 +95,15 @@ namespace mf
                     }
                 }
 
+                if (!curItem.Properties.ContainsKey("url") && !curItem.HasUProperties)
+                {
+                    string url = node.ParseImpliedUrl(baseUrl);
+                    if (!string.IsNullOrEmpty(url))
+                    {
+                        curItem.Properties["url"] = new[] { url };
+                    }
+                }
+
                 this.curItem = priorItem;
             }
 
@@ -104,8 +113,7 @@ namespace mf
                 // TODO Handle vendor prefixes
                 string[] class_parts = propertyClass.Split('-');
                 string name = class_parts[1];
-                string value = "";
-                string alt = "";
+
                 object obj = null;
                 switch (class_parts[0])
                 {
@@ -121,7 +129,7 @@ namespace mf
                         {
                             this.curItem.HasUProperties = true;
                         }
-                        (value, alt) = node.ParseUProperty(baseUrl);
+                        (string value, string alt) = node.ParseUProperty(baseUrl);
                         if (string.IsNullOrEmpty(alt))
                         {
                             obj = value;
@@ -140,7 +148,7 @@ namespace mf
                         {
                             this.curItem.HasEProperties = true;
                         }
-                        (value,alt ) = ("", "");
+                        (value, alt) = node.ParseEProperty(baseUrl);
                         if (string.IsNullOrEmpty(alt))
                         {
                             obj = value;
