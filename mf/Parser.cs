@@ -54,7 +54,7 @@ namespace mf
                 curItem = new Item()
                 {
                     Type = classes.ToArray(),
-                    Properties = new Dictionary<string, object>()
+                    Properties = new Dictionary<string, object[]>()
                 };
 
                 if (this.curItem == null)
@@ -82,18 +82,42 @@ namespace mf
                 string[] class_parts = propertyClass.Split('-');
                 string name = class_parts[1];
                 string value = "";
+                string alt = "";
                 switch (class_parts[0])
                 {
                     case "p":
                         value = node.ParsePProperty(baseUrl);
-                       
-
                         break;
+                    case "u":
+                        (value, alt) = node.ParseUProperty(baseUrl);
+                            break;
 
                 }
                 if (this.curItem != null)
                 {
-                    this.curItem.Properties[name] = value;
+                    object obj = null;
+                    if (string.IsNullOrEmpty(alt))
+                    {
+                        obj = value;
+                    }
+                    else
+                    {
+                        obj = new Photo
+                        {
+                            Alt = alt,
+                            Value = value
+                        };
+                    }
+
+                    if (!this.curItem.Properties.ContainsKey(name))
+                    {
+                        this.curItem.Properties[name] = new[] { obj };
+                    }
+                    else
+                    {
+                        this.curItem.Properties[name] = this.curItem.Properties[name].Append(obj);
+                    }
+
                 }
             }
 
