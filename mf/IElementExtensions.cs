@@ -136,6 +136,57 @@ namespace mf
             return name.Trim();
         }
 
+        public static object ParseImpliedPhoto(this IElement node, Uri baseUrl)
+        {
+            Func<IElement, (string, string)> specialCaseEvaluator = (IElement el) =>
+            {
+                string nodeName = el.NodeName.ToLower();
+                if (new[] { "img" }.Contains(nodeName))
+                {
+                    return (el.GetAttribute("src"), el.GetAttribute("alt"));
+                }
+                else if (nodeName == "object")
+                {
+                    return (el.GetAttribute("data"), "");
+                }
+                return ("", "");
+            };
+
+            (string src, string alt) = specialCaseEvaluator(node);
+
+            if (string.IsNullOrEmpty(src) && node.Children.Length == 1)
+            {
+                var child = node.Children.First();
+                if (child.GetRootClasses().Count() == 0)
+                {
+                    (src, alt) = specialCaseEvaluator(child);
+                }
+                if (string.IsNullOrEmpty(src) && child.Children.Length == 1 && child.Children.First().GetRootClasses().Count() == 0)
+                {
+                    var grandchild = child.Children.First();
+                    (src, alt) = specialCaseEvaluator(grandchild);
+                }
+            }
+
+            if (!string.IsNullOrEmpty(src))
+            {
+                if (src.IsRelative())
+                {
+                    src = src.MakeAbsolute(baseUrl);
+                }
+
+                if (string.IsNullOrEmpty(alt))
+                {
+                    return src;
+                }
+                else
+                {
+                    return new Photo { Alt = alt, Value = src };
+                }
+            }
+            return null;
+        }
+
         public static string ParsePProperty(this IElement node, Uri baseUrl)
         {
             string nodeName = node.NodeName.ToLower();

@@ -86,6 +86,15 @@ namespace mf
                     }
                 }
 
+                if (!curItem.Properties.ContainsKey("photo") && !curItem.HasUProperties)
+                {
+                    object photo = node.ParseImpliedPhoto(baseUrl);
+                    if (photo != null)
+                    {
+                        curItem.Properties["photo"] = new[] { photo };
+                    }
+                }
+
                 this.curItem = priorItem;
             }
 
