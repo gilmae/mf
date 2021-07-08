@@ -10,9 +10,6 @@ namespace mf
 {
     public class Parser
     {
-        private readonly Regex rootClassNames = new Regex($"^h-([a-z0-9]+-)?[a-z]+(-[a-z]+)*$");
-        private readonly Regex propertyClassNames = new Regex($"^(p|u|dt|e)-([a-z0-9]+-)?[a-z]+(-[a-z]+)*$");
-
         private HtmlParser _parser;
         private Document curdata;
         private Item curItem;
@@ -47,13 +44,12 @@ namespace mf
             Item priorItem = null;
             Item curItem = null;
 
-            var classes = getClasses(node);
-            var rootClasses = classes.Where(c => rootClassNames.IsMatch(c));
+            var rootClasses = node.GetRootClasses();
             if (rootClasses.Count() > 0)
             {
                 curItem = new Item()
                 {
-                    Type = classes.ToArray(),
+                    Type = rootClasses.ToArray(),
                     Properties = new Dictionary<string, object[]>()
                 };
 
@@ -78,10 +74,19 @@ namespace mf
 
             if (curItem != null)
             {
-                // implicit properties
+                if (!curItem.Properties.ContainsKey("name") && !curItem.HasEProperties && !curItem.HasPProperties)
+                {
+                    string name = node.ParseImpliedName(baseUrl);
+                    if (!string.IsNullOrEmpty(name))
+                    {
+                        curItem.Properties["name"] = new[] { name };
+                    }
+                }
+
+                this.curItem = priorItem;
             }
 
-            var propertyClasses = classes.Where(c => propertyClassNames.IsMatch(c));
+            var propertyClasses = node.GetPropertyClasses();
             foreach (string propertyClass in propertyClasses)
             {
                 string[] class_parts = propertyClass.Split('-');
@@ -91,11 +96,26 @@ namespace mf
                 switch (class_parts[0])
                 {
                     case "p":
+                        if (this.curItem != null && !this.curItem.HasPProperties)
+                        {
+                            this.curItem.HasPProperties = true;
+                        }
                         value = node.ParsePProperty(baseUrl);
                         break;
                     case "u":
+                        if (this.curItem != null && !this.curItem.HasUProperties)
+                        {
+                            this.curItem.HasUProperties = true;
+                        }
                         (value, alt) = node.ParseUProperty(baseUrl);
                             break;
+                    case "e":
+                        if (this.curItem != null && !this.curItem.HasEProperties)
+                        {
+                            this.curItem.HasEProperties = true;
+                        }
+                        
+                        break;
 
                 }
                 if (this.curItem != null)
@@ -128,16 +148,7 @@ namespace mf
 
         }
 
-        private string[] getClasses(IElement node)
-        {
-            var classAttr = node.Attributes["class"];
-            if (classAttr == null)
-            {
-                return new string[] { };
-            }
-
-            return classAttr.NodeValue.Split(' ');
-        }
+        
 
         
     }

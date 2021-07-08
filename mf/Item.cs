@@ -8,6 +8,10 @@ namespace mf
         public string Id { get; set; }
         public string[] Type { get; set; }
         public Dictionary<string, object[]> Properties { get; set; }
+
+        internal bool HasPProperties { get; set; }
+        internal bool HasUProperties { get; set; }
+        internal bool HasEProperties { get; set; }
     }
 
     public record Photo

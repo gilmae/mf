@@ -10,9 +10,33 @@ namespace mf
 {
     public static class IElementExtensions
     {
+        private readonly static Regex rootClassNames = new Regex($"^h-([a-z0-9]+-)?[a-z]+(-[a-z]+)*$");
+        private readonly static Regex propertyClassNames = new Regex($"^(p|u|dt|e)-([a-z0-9]+-)?[a-z]+(-[a-z]+)*$");
+
         public static bool HasAttribute(this IElement node, string attr)
         {
             return !string.IsNullOrEmpty(node.Attributes[attr]?.Value);
+        }
+
+        public static string[] GetClasses(this IElement node)
+        {
+            var classAttr = node.Attributes["class"];
+            if (classAttr == null)
+            {
+                return new string[] { };
+            }
+
+            return classAttr.NodeValue.Split(' ');
+        }
+
+        public static IEnumerable<string> GetPropertyClasses(this IElement node)
+        {
+            return node.GetClasses().Where(c => propertyClassNames.IsMatch(c));
+        }
+
+        public static IEnumerable<string> GetRootClasses(this IElement node)
+        {
+            return node.GetClasses().Where(c => rootClassNames.IsMatch(c));
         }
 
         public static string GetTextValue(this IElement node, Uri baseUrl)
@@ -45,7 +69,46 @@ namespace mf
             return node.TextContent.Trim();
         }
 
-        public static string  ParsePProperty(this IElement node, Uri baseUrl)
+        public static string ParseImpliedName(this IElement node, Uri baseUrl)
+        {
+            Func<IElement, string> specialCaseEvaluator = (IElement el) =>
+             {
+                 string nodeName = el.NodeName.ToLower();
+                 if (new[] { "img", "area" }.Contains(nodeName))
+                 {
+                     return el.GetAttribute("alt");
+                 }
+                 else if (nodeName == "abbr")
+                 {
+                     return el.GetAttribute("title");
+                 }
+                 return "";
+             };
+
+            string name = specialCaseEvaluator(node);
+            
+            if (name == "" && node.Children.Length == 1 )
+            {
+                var child = node.Children.First();
+                if (child.GetRootClasses().Count() == 0)
+                {
+                    name = specialCaseEvaluator(child);
+                }
+                if (name == "" && child.Children.Length == 1 && child.Children.First().GetRootClasses().Count() == 0)
+                {
+                    var grandchild = child.Children.First();
+                    name = specialCaseEvaluator(grandchild);
+                }
+            }
+
+            if (string.IsNullOrEmpty(name))
+            {
+                name = node.GetTextValue(baseUrl);
+            }
+            return name.Trim();
+        }
+
+        public static string ParsePProperty(this IElement node, Uri baseUrl)
         {
             string nodeName = node.NodeName.ToLower();
 
