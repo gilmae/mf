@@ -3,18 +3,15 @@ using AngleSharp.Html.Parser;
 using AngleSharp.Dom;
 using System;
 using System.Collections.Generic;
-using System.Text.RegularExpressions;
-using AngleSharp.Html.Dom;
 
 namespace mf
 {
     public class Parser
     {
-        private HtmlParser _parser;
-        private Document curdata;
-        private Item curItem;
-        private Uri baseUrl;
-        private bool baseFound;
+        internal HtmlParser _parser;
+        internal Document Document;
+        internal Item currentItem;
+        internal Uri baseUrl;
 
 
         public Parser()
@@ -24,21 +21,30 @@ namespace mf
                 IsNotConsumingCharacterReferences = true,
             });
         }
+    }
+    public static class ParserExtensions
+    {
 
-        public Document Parse(string html, Uri baseUrl)
+        public static Document Parse(this Parser parser, string html, Uri baseUrl)
+
         {
-            curdata = new Document();
-            this.baseUrl = baseUrl;
+            parser.Document = new Document();
+            parser.baseUrl = baseUrl;
 
-            var doc = _parser.ParseDocument(html);
+            var doc = parser._parser.ParseDocument(html);
+            var baseInDoc = doc.QuerySelector("base['href']");
+            if (baseInDoc != null && !string.IsNullOrEmpty(baseInDoc.NodeValue) && System.Uri.IsWellFormedUriString(baseInDoc.NodeValue, UriKind.Absolute))
+            {
+                parser.baseUrl = new Uri(baseInDoc.NodeValue);
+            }
             var root = doc.DocumentElement;
 
-            walk(root, baseUrl);
+            parser.walk(root);
 
-            return curdata;
+            return parser.Document;
         }
 
-        private void walk(IElement node, Uri baseUrl)
+        public static void walk(this Parser parser, IElement node)
         {
             Item priorItem = null;
             Item curItem = null;
@@ -57,29 +63,29 @@ namespace mf
                     curItem.Id = node.Id;
                 }
 
-                if (this.curItem == null)
+                if (parser.currentItem == null)
                 {
-                    this.curdata.Items.Add(curItem);
+                    parser.Document.Items.Add(curItem);
                 }
                 else
                 {
-                    this.curItem.HasNestedMicroformats = true;
+                    parser.currentItem.HasNestedMicroformats = true;
                 }
 
-                priorItem = this.curItem;
-                this.curItem = curItem;
+                priorItem = parser.currentItem;
+                parser.currentItem = curItem;
             }
 
             foreach (var child in node.Children)
             {
-                walk(child, baseUrl);
+                parser.walk(child);
             }
 
             if (curItem != null)
             {
                 if (!curItem.Properties.ContainsKey("name") && !curItem.HasEProperties && !curItem.HasPProperties)
                 {
-                    string name = node.ParseImpliedName(baseUrl);
+                    string name = node.ParseImpliedName(parser.baseUrl);
                     if (!string.IsNullOrEmpty(name))
                     {
                         curItem.Properties["name"] = new[] { name };
@@ -88,7 +94,7 @@ namespace mf
 
                 if (!curItem.Properties.ContainsKey("photo") && !curItem.HasUProperties)
                 {
-                    object photo = node.ParseImpliedPhoto(baseUrl);
+                    object photo = node.ParseImpliedPhoto(parser.baseUrl);
                     if (photo != null)
                     {
                         curItem.Properties["photo"] = new[] { photo };
@@ -97,14 +103,14 @@ namespace mf
 
                 if (!curItem.Properties.ContainsKey("url") && !curItem.HasUProperties)
                 {
-                    string url = node.ParseImpliedUrl(baseUrl);
+                    string url = node.ParseImpliedUrl(parser.baseUrl);
                     if (!string.IsNullOrEmpty(url))
                     {
                         curItem.Properties["url"] = new[] { url };
                     }
                 }
 
-                this.curItem = priorItem;
+                parser.currentItem = priorItem;
             }
 
             var propertyClasses = node.GetPropertyClasses();
@@ -118,18 +124,18 @@ namespace mf
                 switch (class_parts[0])
                 {
                     case "p":
-                        if (this.curItem != null && !this.curItem.HasPProperties)
+                        if (parser.currentItem != null && !parser.currentItem.HasPProperties)
                         {
-                            this.curItem.HasPProperties = true;
+                            parser.currentItem.HasPProperties = true;
                         }
-                        obj = node.ParsePProperty(baseUrl);
+                        obj = node.ParsePProperty(parser.baseUrl);
                         break;
                     case "u":
-                        if (this.curItem != null && !this.curItem.HasUProperties)
+                        if (parser.currentItem != null && !parser.currentItem.HasUProperties)
                         {
-                            this.curItem.HasUProperties = true;
+                            parser.currentItem.HasUProperties = true;
                         }
-                        (string value, string alt) = node.ParseUProperty(baseUrl);
+                        (string value, string alt) = node.ParseUProperty(parser.baseUrl);
                         if (string.IsNullOrEmpty(alt))
                         {
                             obj = value;
@@ -144,11 +150,11 @@ namespace mf
                         }
                         break;
                     case "e":
-                        if (this.curItem != null && !this.curItem.HasEProperties)
+                        if (parser.currentItem != null && !parser.currentItem.HasEProperties)
                         {
-                            this.curItem.HasEProperties = true;
+                            parser.currentItem.HasEProperties = true;
                         }
-                        (value, alt) = node.ParseEProperty(baseUrl);
+                        (value, alt) = node.ParseEProperty(parser.baseUrl);
                         if (string.IsNullOrEmpty(alt))
                         {
                             obj = value;
@@ -164,24 +170,20 @@ namespace mf
                         break;
 
                 }
-                if (this.curItem != null)
+                if (parser.currentItem != null)
                 {
-                    if (!this.curItem.Properties.ContainsKey(name))
+                    if (!parser.currentItem.Properties.ContainsKey(name))
                     {
-                        this.curItem.Properties[name] = new[] { obj };
+                        parser.currentItem.Properties[name] = new[] { obj };
                     }
                     else
                     {
-                        this.curItem.Properties[name] = this.curItem.Properties[name].Append(obj);
+                        parser.currentItem.Properties[name] = parser.currentItem.Properties[name].Append(obj);
                     }
 
                 }
             }
 
         }
-
-        
-
-        
     }
 }
