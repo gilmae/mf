@@ -10,7 +10,7 @@ namespace mf
     {
         internal HtmlParser _parser;
         internal Document Document;
-        internal Item currentItem;
+        internal Microformat currentItem;
         internal Uri baseUrl;
 
 
@@ -46,13 +46,13 @@ namespace mf
 
         public static void walk(this Parser parser, IElement node)
         {
-            Item priorItem = null;
-            Item curItem = null;
+            Microformat priorItem = null;
+            Microformat curItem = null;
 
             var rootClasses = node.GetRootClasses();
             if (rootClasses.Count() > 0)
             {
-                curItem = new Item()
+                curItem = new Microformat()
                 {
                     Type = rootClasses.ToArray(),
                     Properties = new Dictionary<string, object[]>()

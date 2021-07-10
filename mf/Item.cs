@@ -5,7 +5,7 @@ using System.Runtime.CompilerServices;
 [assembly: InternalsVisibleTo("mf.Tests")]
 namespace mf
 {
-    public record Item
+    public record Microformat
     {
         public string Id { get; set; }
         public string[] Type { get; set; }
