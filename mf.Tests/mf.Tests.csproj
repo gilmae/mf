@@ -24,8 +24,10 @@
   </ItemGroup>
   <ItemGroup>
     <None Remove="Parser\" />
+    <None Remove="DateTimeZoneTests\" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Parser\" />
+    <Folder Include="DateTimeZoneTests\" />
   </ItemGroup>
 </Project>
