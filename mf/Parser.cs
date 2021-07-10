@@ -114,76 +114,81 @@ namespace mf
             }
 
             var propertyClasses = node.GetPropertyClasses();
-            foreach (string propertyClass in propertyClasses)
+            if (propertyClasses.Count() > 0)
             {
-                // TODO Handle vendor prefixes
-                string[] class_parts = propertyClass.Split('-');
-                string name = class_parts[1];
-
-                object obj = null;
-                switch (class_parts[0])
+                foreach (string propertyClass in propertyClasses)
                 {
-                    case "p":
-                        if (parser.currentItem != null && !parser.currentItem.HasPProperties)
-                        {
-                            parser.currentItem.HasPProperties = true;
-                        }
-                        obj = node.ParsePProperty(parser.baseUrl);
-                        break;
-                    case "u":
-                        if (parser.currentItem != null && !parser.currentItem.HasUProperties)
-                        {
-                            parser.currentItem.HasUProperties = true;
-                        }
-                        (string value, string alt) = node.ParseUProperty(parser.baseUrl);
-                        if (string.IsNullOrEmpty(alt))
-                        {
-                            obj = value;
-                        }
-                        else
-                        {
-                            obj = new Photo
-                            {
-                                Alt = alt,
-                                Value = value
-                            };
-                        }
-                        break;
-                    case "e":
-                        if (parser.currentItem != null && !parser.currentItem.HasEProperties)
-                        {
-                            parser.currentItem.HasEProperties = true;
-                        }
-                        (value, alt) = node.ParseEProperty(parser.baseUrl);
-                        if (string.IsNullOrEmpty(alt))
-                        {
-                            obj = value;
-                        }
-                        else
-                        {
-                            obj = new EmbeddedMarkup
-                            {
-                                Html = alt,
-                                Value = value
-                            };
-                        }
-                        break;
+                    // TODO Handle vendor prefixes
+                    string[] class_parts = propertyClass.Split('-');
+                    string name = class_parts[1];
 
-                }
-                if (parser.currentItem != null)
-                {
-                    if (!parser.currentItem.Properties.ContainsKey(name))
+                    object obj = null;
+                    switch (class_parts[0])
                     {
-                        parser.currentItem.Properties[name] = new[] { obj };
-                    }
-                    else
-                    {
-                        parser.currentItem.Properties[name] = parser.currentItem.Properties[name].Append(obj);
-                    }
+                        case "p":
+                            if (parser.currentItem != null && !parser.currentItem.HasPProperties)
+                            {
+                                parser.currentItem.HasPProperties = true;
+                            }
+                            obj = node.ParsePProperty(parser.baseUrl);
+                            break;
+                        case "u":
+                            if (parser.currentItem != null && !parser.currentItem.HasUProperties)
+                            {
+                                parser.currentItem.HasUProperties = true;
+                            }
+                            (string value, string alt) = node.ParseUProperty(parser.baseUrl);
+                            if (string.IsNullOrEmpty(alt))
+                            {
+                                obj = value;
+                            }
+                            else
+                            {
+                                obj = new Photo
+                                {
+                                    Alt = alt,
+                                    Value = value
+                                };
+                            }
+                            break;
+                        case "e":
+                            if (parser.currentItem != null && !parser.currentItem.HasEProperties)
+                            {
+                                parser.currentItem.HasEProperties = true;
+                            }
+                            (value, alt) = node.ParseEProperty(parser.baseUrl);
+                            if (string.IsNullOrEmpty(alt))
+                            {
+                                obj = value;
+                            }
+                            else
+                            {
+                                obj = new EmbeddedMarkup
+                                {
+                                    Html = alt,
+                                    Value = value
+                                };
+                            }
+                            break;
 
+                    }
+                    if (parser.currentItem != null)
+                    {
+                        parser.currentItem.AddProperty(name, obj);
+                    }
                 }
             }
+            else
+            {
+                if (curItem != null && parser.currentItem != null)
+                {
+                    parser.currentItem.Children.Add(curItem);
 
+                    parser.currentItem.HasNestedMicroformats = true;
+                }
+
+            }
         }
+
     }
 }
