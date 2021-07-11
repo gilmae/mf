@@ -170,6 +170,9 @@ namespace mf
                                 };
                             }
                             break;
+                        case "dt":
+                            obj = node.ParseDateTimeProperty(parser.baseUrl);
+                            break;
 
                     }
                     if (parser.currentItem != null)

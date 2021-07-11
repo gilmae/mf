@@ -195,7 +195,7 @@ namespace mf.Tests.DateTimeZoneTests
             dtz.SetDate(2001, 2, 3);
             dtz.SetTime(4, 5, null);
 
-            Assert.Equal("2001-02-03 04:05", dtz.ToString());
+            Assert.Equal("2001-02-03T04:05", dtz.ToString());
         }
 
         [Fact]
@@ -205,7 +205,7 @@ namespace mf.Tests.DateTimeZoneTests
             dtz.SetDate(2001, 2, 3);
             dtz.SetTime(4, 5, 6);
 
-            Assert.Equal("2001-02-03 04:05:06", dtz.ToString());
+            Assert.Equal("2001-02-03T04:05:06", dtz.ToString());
         }
 
         [Fact]
@@ -215,7 +215,7 @@ namespace mf.Tests.DateTimeZoneTests
             dtz.SetDate(2001, 2, 3);
             dtz.SetTime(14, 5, 6);
 
-            Assert.Equal("2001-02-03 14:05:06", dtz.ToString());
+            Assert.Equal("2001-02-03T14:05:06", dtz.ToString());
         }
 
         [Fact]
@@ -226,7 +226,7 @@ namespace mf.Tests.DateTimeZoneTests
             dtz.SetTime(14, 5, null);
             dtz.SetTimezone(6, 7);
 
-            Assert.Equal("2001-02-03 14:05+0607", dtz.ToString());
+            Assert.Equal("2001-02-03T14:05+0607", dtz.ToString());
         }
 
         [Fact]
@@ -237,7 +237,7 @@ namespace mf.Tests.DateTimeZoneTests
             dtz.SetTime(4, 5, 6);
             dtz.SetTimezone(7, 8);
 
-            Assert.Equal("2001-02-03 04:05:06+0708", dtz.ToString());
+            Assert.Equal("2001-02-03T04:05:06+0708", dtz.ToString());
         }
 
 
@@ -249,7 +249,7 @@ namespace mf.Tests.DateTimeZoneTests
             dtz.SetTime(4, 5, 6);
             dtz.SetTimezone(7, 8, true);
 
-            Assert.Equal("2001-02-03 04:05:06-0708", dtz.ToString());
+            Assert.Equal("2001-02-03T04:05:06-0708", dtz.ToString());
         }
 
         [Fact]
@@ -260,7 +260,7 @@ namespace mf.Tests.DateTimeZoneTests
             dtz.SetTime(14, 5, null);
             dtz.SetTimezone(0, 0);
 
-            Assert.Equal("2001-02-03 14:05Z", dtz.ToString());
+            Assert.Equal("2001-02-03T14:05Z", dtz.ToString());
         }
 
         [Fact]
@@ -271,7 +271,7 @@ namespace mf.Tests.DateTimeZoneTests
             dtz.SetTime(14, 5, null);
             dtz.SetTimezone("06:07");
 
-            Assert.Equal("2001-02-03 14:05+0607", dtz.ToString());
+            Assert.Equal("2001-02-03T14:05+0607", dtz.ToString());
         }
 
         [Fact]
@@ -282,7 +282,7 @@ namespace mf.Tests.DateTimeZoneTests
             dtz.SetTime(4, 5, 6);
             dtz.SetTimezone("07:08");
 
-            Assert.Equal("2001-02-03 04:05:06+0708", dtz.ToString());
+            Assert.Equal("2001-02-03T04:05:06+0708", dtz.ToString());
         }
 
 
@@ -294,7 +294,7 @@ namespace mf.Tests.DateTimeZoneTests
             dtz.SetTime(4, 5, 6);
             dtz.SetTimezone("-07:08");
 
-            Assert.Equal("2001-02-03 04:05:06-0708", dtz.ToString());
+            Assert.Equal("2001-02-03T04:05:06-0708", dtz.ToString());
         }
 
         [Fact]
@@ -305,7 +305,7 @@ namespace mf.Tests.DateTimeZoneTests
             dtz.SetTime(14, 5, null);
             dtz.SetTimezone("00:00");
 
-            Assert.Equal("2001-02-03 14:05Z", dtz.ToString());
+            Assert.Equal("2001-02-03T14:05Z", dtz.ToString());
         }
 
 

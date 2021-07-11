@@ -85,20 +85,20 @@ namespace mf
             {
                 if (hasSeconds)
                 {
-                    return dt.ToString("yyyy-MM-dd HH:mm:ss");
+                    return dt.ToString("yyyy-MM-ddTHH:mm:ss");
                 }
-                return dt.ToString("yyyy-MM-dd HH:mm");
+                return dt.ToString("yyyy-MM-ddTHH:mm");
             }
 
             DateTimeOffset o = new DateTimeOffset(dt, tz);
             string value;
             if (hasSeconds)
             {
-                value = o.ToString("yyyy-MM-dd HH:mm:sszzz");
+                value = o.ToString("yyyy-MM-ddTHH:mm:sszzz");
             }
             else
             {
-                value = o.ToString("yyyy-MM-dd HH:mmzzz");
+                value = o.ToString("yyyy-MM-ddTHH:mmzzz");
             }
 
             if (value.Substring(value.Length-3,1) ==":")
@@ -171,9 +171,13 @@ namespace mf
                 new datetimeFormats("HH:mm", false,false ),
                 new datetimeFormats("HH:mm:ss", true,false),
 
+                new datetimeFormats("HH:mm:sstt", true,false),
+                new datetimeFormats("hh:mm:sstt", true,false),
                 new datetimeFormats("htt", false,false ),
                 new datetimeFormats("h:mmtt", false,false ),
-                new datetimeFormats("h:mm:sstt", true,false)
+                new datetimeFormats("h:mm:sstt", true,false),
+                
+
 
 
             };

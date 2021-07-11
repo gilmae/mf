@@ -69,6 +69,35 @@ namespace mf
             return node.TextContent.Trim();
         }
 
+        public static string ParseDateTimeProperty(this IElement node, Uri baseUrl)
+        {
+            string value = node.ParseValueClassPattern(true);
+            if (!string.IsNullOrEmpty(value))
+            {
+                return value;
+            }
+
+            string nodeName = node.NodeName.ToLower();
+            if (new[] { "time", "ins", "del" }.Contains(nodeName) && node.HasAttribute("datetime"))
+            {
+                value = node.Attributes["datetime"].NodeValue;
+            }
+            else if (nodeName == "abbr" && node.HasAttribute("title"))
+            {
+                value = node.Attributes["title"].NodeValue;
+            }
+            else if (nodeName == "data" && node.HasAttribute("value"))
+            {
+                value = node.Attributes["value"].NodeValue;
+            }
+            else
+            {
+                value = node.GetTextValue(baseUrl);
+            }
+
+            return value.Trim();
+        }
+
         public static (string, string) ParseEProperty(this IElement node, Uri baseUrl)
         {
             if (node == null)
@@ -229,7 +258,7 @@ namespace mf
         {
             string nodeName = node.NodeName.ToLower();
 
-            string value = node.ParseValueClassPattern();
+            string value = node.ParseValueClassPattern(false);
             if (!string.IsNullOrEmpty(value))
             {
                 return value;
@@ -256,7 +285,7 @@ namespace mf
         public static (string, string) ParseUProperty(this IElement node, Uri baseUrl)
         {
             string nodeName = node.NodeName.ToLower();
-            string value = node.ParseValueClassPattern();
+            string value = node.ParseValueClassPattern(false);
             string name = "";
 
             if ((nodeName == "a" || nodeName == "area" || nodeName == "link")
@@ -306,13 +335,14 @@ namespace mf
 
         }
 
-        public static string ParseValueClassPattern(this IElement node)
+        public static string ParseValueClassPattern(this IElement node, bool expectsDateTime = false)
         {
-            if (node == null) {
+            if (node == null)
+            {
                 return "";
             }
 
-            
+
             var values = new List<string>();
             var processed = new List<INode>();
 
@@ -354,7 +384,7 @@ namespace mf
                         }
                         else if (nodeName == "abbr")
                         {
-                            if (element.Attributes["title"]!= null)
+                            if (element.Attributes["title"] != null)
                             {
                                 addToValues(el, element.Attributes["title"].NodeValue);
                             }
@@ -363,6 +393,12 @@ namespace mf
                                 addToValues(el, node.InnerHtml);
                             }
                         }
+                        else if (expectsDateTime && new[] { "time", "ins", "del" }.Contains(nodeName) && element.Attributes["datetime"] != null)
+                        {
+                            addToValues(el, element.Attributes["datetime"].NodeValue);
+                        }
+
+
                         else
                         {
                             addToValues(el, element.InnerHtml);
@@ -370,7 +406,19 @@ namespace mf
                     }
                 }
             });
-            return string.Join("", values.ToArray().Select(v => Regex.Replace(Regex.Replace(v, @"\s{2,}", " "), @">\s+<", "><").Trim()));
+            if (expectsDateTime)
+            {
+                DateTimeZone dtz = new DateTimeZone();
+                foreach (string v in values)
+                {
+                    dtz.Parse(v.Trim());
+                }
+                return dtz.ToString();
+            }
+            else
+            {
+                return string.Join("", values.ToArray().Select(v => Regex.Replace(Regex.Replace(v, @"\s{2,}", " "), @">\s+<", "><").Trim()));
+            }
         }
 
         
