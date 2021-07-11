@@ -76,6 +76,47 @@ namespace mf
                 parser.currentItem = curItem;
             }
 
+            if (new [] {"link","a", "area"}.Contains(node.NodeName.ToLower()) && node.HasAttribute("rel"))
+            {
+                List<string> rels = new List<string>();
+                string url = node.GetAttribute("href");
+                if (!string.IsNullOrEmpty(url))
+                {
+                    url = url.MakeAbsolute(parser.baseUrl);
+                }
+
+                string[] relValues = node.GetAttribute("rel").Split(' ');
+                foreach (string r in relValues)
+                {
+                    if (!parser.Document.Rels.ContainsKey(r))
+                    {
+                        parser.Document.Rels[r] = new List<string>() { url };
+                    }
+                    else
+                    {
+                        if (!parser.Document.Rels[r].Contains(url))
+                        {
+                            parser.Document.Rels[r].Add(url);
+                        }
+                    }
+
+                    if (!parser.Document.Rel_Urls.ContainsKey(url))
+                    {
+                        parser.Document.Rel_Urls[url] = new Dictionary<string, object>
+                        {
+                            { "text", node.GetTextValue(parser.baseUrl) },
+                            { "rels", relValues },
+                            { "media", node.GetAttribute("media") },
+                            { "hreflang", node.GetAttribute("hreflang") },
+                            { "title", node.GetAttribute("title") },
+                            { "type", node.GetAttribute("type") },
+                        };
+                    }
+                }
+
+
+            }
+
             foreach (var child in node.Children)
             {
                 parser.walk(child);
