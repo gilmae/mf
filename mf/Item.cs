@@ -42,7 +42,7 @@ namespace mf
                 }
                 else
                 {
-                    mf.Properties[name].Append(property);
+                    mf.Properties[name] = mf.Properties[name].Append(property);
                 }
 
             }
