@@ -3,6 +3,8 @@ using AngleSharp.Html.Parser;
 using AngleSharp.Dom;
 using System;
 using System.Collections.Generic;
+using System.Net;
+using AngleSharp.Html.Dom;
 
 namespace mf
 {
@@ -24,14 +26,33 @@ namespace mf
     }
     public static class ParserExtensions
     {
+        public static Document Parse(this Parser parser, Url url)
+        {
+            WebRequest req = WebRequest.Create(url);
+
+            using (var resp = req.GetResponse())
+            {
+                if (resp != null)
+                {
+                    var s = resp.GetResponseStream();
+                    var doc = parser._parser.ParseDocument(s);
+                    return parser.ParseDoc(doc, url);
+                }
+            }
+            return null;
+        }
 
         public static Document Parse(this Parser parser, string html, Uri baseUrl)
+        {
+            var doc = parser._parser.ParseDocument(html);
+            return parser.ParseDoc(doc, baseUrl);
+        }
 
+        internal static Document ParseDoc(this Parser parser, IHtmlDocument doc, Uri baseUrl)
         {
             parser.Document = new Document();
             parser.baseUrl = baseUrl;
 
-            var doc = parser._parser.ParseDocument(html);
             var baseInDoc = doc.QuerySelector("base['href']");
             if (baseInDoc != null && !string.IsNullOrEmpty(baseInDoc.NodeValue) && System.Uri.IsWellFormedUriString(baseInDoc.NodeValue, UriKind.Absolute))
             {
@@ -44,7 +65,7 @@ namespace mf
             return parser.Document;
         }
 
-        public static void walk(this Parser parser, IElement node)
+        internal static void walk(this Parser parser, IElement node)
         {
             Microformat priorItem = null;
             Microformat curItem = null;
