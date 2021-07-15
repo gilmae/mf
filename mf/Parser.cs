@@ -122,7 +122,7 @@ namespace mf
                 parser.walk(child);
             }
 
-            if (curItem != null)
+            if (curItem != null && !curItem.HasNestedMicroformats)
             {
                 if (!curItem.Properties.ContainsKey("name") && !curItem.HasEProperties && !curItem.HasPProperties)
                 {
@@ -157,11 +157,11 @@ namespace mf
             var propertyClasses = node.GetPropertyClasses();
             if (propertyClasses.Count() > 0)
             {
-                foreach (string propertyClass in propertyClasses)
+                    foreach (string propertyClass in propertyClasses)
                 {
                     // TODO Handle vendor prefixes
                     string[] class_parts = propertyClass.Split('-');
-                    string name = class_parts[1];
+                    string name = string.Join('-', class_parts.Skip(1));
 
                     object obj = null;
                     switch (class_parts[0])
@@ -216,7 +216,18 @@ namespace mf
                             break;
 
                     }
-                    if (parser.currentItem != null)
+                    if (curItem != null && parser.currentItem != null)
+                    {
+                        parser.currentItem.AddProperty(name, new Microformat
+                        {
+                            Id = curItem.Id,
+                            Type = curItem.Type,
+                            Properties = curItem.Properties,
+                            Children = curItem.Children
+                        });
+
+                    }
+                    else if (parser.currentItem != null)
                     {
                         parser.currentItem.AddProperty(name, obj);
                     }
@@ -224,7 +235,7 @@ namespace mf
             }
             else
             {
-                if (curItem != null && parser.currentItem != null)
+                if (curItem != null && parser.currentItem != null && parser.currentItem != curItem)
                 {
                     parser.currentItem.Children.Add(curItem);
 

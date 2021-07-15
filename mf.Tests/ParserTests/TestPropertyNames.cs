@@ -120,8 +120,7 @@ namespace mf.Tests.ParserTests
             Assert.False(doc.Items[1].Properties.ContainsKey("name"));
             Assert.False(doc.Items[2].Properties.ContainsKey("name"));
 
-            // No nested tracking yet
-            //Assert.False(doc.Items[3].Properties.ContainsKey("name"));
+            Assert.False(doc.Items[3].Properties.ContainsKey("name"));
 
 
         }
