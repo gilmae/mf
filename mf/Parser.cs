@@ -26,7 +26,7 @@ namespace mf
     }
     public static class ParserExtensions
     {
-        public static Document Parse(this Parser parser, Url url)
+        public static Document Parse(this Parser parser, Uri url)
         {
             WebRequest req = WebRequest.Create(url);
 
