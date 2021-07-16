@@ -1,15 +1,23 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using System.Text.Json.Serialization;
 
 [assembly: InternalsVisibleTo("mf.Tests")]
 namespace mf
 {
     public record Microformat
     {
+        [JsonPropertyName("id")]        
         public string Id { get; set; }
+        
+        [JsonPropertyName("type")]   
         public string[] Type { get; set; }
+        
+        [JsonPropertyName("properties")]   
         public Dictionary<string, object[]> Properties { get; set; }
+        
+        [JsonPropertyName("children")]   
         public List<Microformat> Children { get; set; }
 
         internal bool HasPProperties { get; set; }
@@ -51,13 +59,21 @@ namespace mf
 
     public record Photo
     {
+                
+        [JsonPropertyName("alt")]   
         public string Alt { get; set; }
+                
+        [JsonPropertyName("value")]   
         public string Value { get; set; }
     }
 
     public record EmbeddedMarkup
     {
+                
+        [JsonPropertyName("html")]   
         public string Html { get; set; }
+                
+        [JsonPropertyName("value")]   
         public string Value { get; set; }
     }
 
