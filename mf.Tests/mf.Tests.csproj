@@ -25,9 +25,11 @@
   <ItemGroup>
     <None Remove="Parser\" />
     <None Remove="DateTimeZoneTests\" />
+    <None Remove="VobularyTests\" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Parser\" />
     <Folder Include="DateTimeZoneTests\" />
+    <Folder Include="VocabularyTests\" />
   </ItemGroup>
 </Project>

@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text.Json.Serialization;
+using mf.vocabularies;
 
 [assembly: InternalsVisibleTo("mf.Tests")]
 namespace mf
@@ -54,6 +56,15 @@ namespace mf
                 }
 
             }
+        }
+
+        public static Entry AsEntry(this Microformat mf)
+        {
+            if (mf.Type.Contains("h-entry") || mf.Type.Contains("entry"))
+            {
+                return new Entry(mf);
+            }
+            throw new ArgumentException("Microformat is not a h-entry");
         }
     }
 
