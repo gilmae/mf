@@ -4,7 +4,7 @@
     <TargetFramework>net5.0</TargetFramework>
     <OutputType>Library</OutputType>
     <PackageId>mfDotNet</PackageId>
-    <Version>1.0.0</Version>
+    <Version>1.1.1</Version>
     <Authors>David Edgar</Authors>
     <PackageDescription>A microformats parser. mfDotNet provides a parser to extract data from html annotated using the for microformats2 (http://microformats.org/wiki/microformats2) specification.</PackageDescription>
     <RepositoryUrl>https://github.com/gilmae/mf</RepositoryUrl>
