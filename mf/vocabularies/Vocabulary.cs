@@ -24,6 +24,12 @@ namespace mf
         public string Name { get; set; }
     }
 
+    [AttributeUsage(AttributeTargets.Property)]
+    public class IdAttribute : Attribute
+    {
+
+    }
+
     public static class VocabularExtensions
     {
         public static T AsVocab<T>(this Microformat item)
@@ -98,6 +104,13 @@ namespace mf
                         }
                     }
                 }
+
+                var idAttr = prop.GetCustomAttributes(true).SingleOrDefault(a => a is IdAttribute) as PropertyAttribute;
+                if (idAttr != null)
+                {
+                    prop.SetValue(vocab, item.Id);
+                }
+
             }
             return vocab;
         }
