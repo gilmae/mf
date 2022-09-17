@@ -18,7 +18,7 @@ namespace mf
         [JsonPropertyName("properties")]   
         public Dictionary<string, object[]> Properties { get; set; }
         
-        [JsonPropertyName("children")]   
+        [JsonPropertyName("children")]
         public List<Microformat> Children { get; set; }
 
         internal bool HasPProperties { get; set; }
