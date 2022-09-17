@@ -16,6 +16,9 @@ namespace mf.Tests.VocabularyTests
         [Property(Name = "content")]
         public string Content { get; set; }
 
+        [Property(Name="likes")]
+        public int Likes { get; set; }
+
         [Property(Name = "published")]
         [TypeConverter(typeof(DateTimeConverter))]
         public DateTime[] Published { get; set; }

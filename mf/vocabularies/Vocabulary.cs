@@ -34,15 +34,38 @@ namespace mf
     {
         public static T AsVocab<T>(this Microformat item)
          {
-            Action<PropertyInfo, T, object > SetValue = (PropertyInfo pi, T vocab, object v) => {
-                if (pi.PropertyType.IsArray || pi.PropertyType.IsAssignableFrom(typeof(IEnumerable)))
+            Action<PropertyInfo, T, object, TypeConverter> SetValue = (PropertyInfo pi, T vocab, object v, TypeConverter converter) =>
+            {
+                if (v == null)
+                {
+                    pi.SetValue(vocab, v);
+                }
+                else if (converter == null)
+                {
+                    pi.SetValue(vocab, v);
+                }
+                else if (pi.PropertyType.IsArray || pi.PropertyType.IsAssignableFrom(typeof(IEnumerable)))
                 {
                     if (v is IEnumerable)
                     {
-                        pi.SetValue(vocab, v);
-                    } else
+                        int length = new List<object>(((IEnumerable<object>)v)).Count;
+                        Array targetArr = Array.CreateInstance(pi.PropertyType.GetElementType(), length);
+
+                        IEnumerator enumerator = ((IEnumerable)v).GetEnumerator();
+                        int i = 0;
+                        while (enumerator.MoveNext())
+                        {
+                            targetArr.SetValue(converter.ConvertTo(enumerator.Current, pi.PropertyType.GetElementType()), i);
+                            i += 1;
+                        } 
+
+                        pi.SetValue(vocab, targetArr);
+                    }
+                    else
                     {
-                        pi.SetValue(vocab, new object[] { v });
+                        Array targetArr = Array.CreateInstance(pi.PropertyType.GetElementType(), 1);
+                        targetArr.SetValue(converter.ConvertTo(v, pi.PropertyType.GetElementType()), 0);
+                        pi.SetValue(vocab, targetArr);
                     }
                 }
                 else
@@ -52,14 +75,14 @@ namespace mf
                         object v1 = null;
                         IEnumerator enumer = (v as IEnumerable).GetEnumerator();
                         if (enumer.MoveNext()) v1 = enumer.Current;
-                        
-                        pi.SetValue(vocab, v1);
+
+                        pi.SetValue(vocab, converter.ConvertTo(v1, pi.PropertyType));
                     }
                     else
                     {
-                        pi.SetValue(vocab, v);
+                        pi.SetValue(vocab, converter.ConvertTo(v, pi.PropertyType));
                     }
-                    
+
                 }
             };
 
@@ -96,11 +119,24 @@ namespace mf
                             if (converter.CanConvertFrom(typeof(object[])) && converter.CanConvertTo(prop.PropertyType))
                             {
                                 var convertedValues = converter.ConvertTo(v, prop.PropertyType);
-                                SetValue(prop, vocab, convertedValues);
+                                SetValue(prop, vocab, convertedValues, null);
                             }
                         } else
                         {
-                            SetValue(prop, vocab, v);
+                            if (prop.PropertyType == typeof(object[]))
+                            {
+                                SetValue(prop, vocab, v, null);
+                            }
+                            else {
+                                Type targetType = prop.PropertyType;
+                                if (prop.PropertyType.IsArray || prop.PropertyType.IsAssignableFrom(typeof(IEnumerable)))
+                                {
+                                    targetType = prop.PropertyType.GetElementType();
+                                    
+                                }
+                                TypeConverter converter = TypeDescriptor.GetConverter(targetType);
+                                SetValue(prop, vocab, v, converter);
+                            }
                         }
                     }
                 }
