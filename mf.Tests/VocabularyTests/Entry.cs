@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
 
@@ -46,30 +47,9 @@ namespace mf.Tests.VocabularyTests
 
         [Property(Name = "longitude")]
         public object[] Longitude { get; set; }
-    }
 
-    public class DateTimeConverter : TypeConverter
-    {
-        public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
-        {
-            return sourceType == typeof(object[]);
-        }
-
-        public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType)
-        {
-            return destinationType == typeof(DateTime[]);
-        }
-
-        public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
-        {
-            var orig = value as object[];
-            var dest = new DateTime[orig.Length];
-
-            for (int i = 0;i<orig.Length;i++)
-            {
-                dest[i] = DateTime.Parse(orig[i].ToString());
-            }
-            return dest;
-        }
+        [Property(Name ="republished")]
+        [TypeConverter(typeof(DateTimeConverter))]
+        public DateTime? RePublished{ get; set; }
     }
 }

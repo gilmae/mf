@@ -37,6 +37,24 @@ namespace mf.Tests.VocabularyTests {
         }
 
         [Fact]
+        public void Casts_SingleDateTime_Property () {
+            Microformat mf = new Microformat { Type = new [] { "h-entry" }, Properties = new System.Collections.Generic.Dictionary<string, object[]> { { "republished", new [] { "2021-01-01T00:00:00" } } } };
+
+            Entry v = mf.AsVocab<Entry> ();
+
+            Assert.Equal (DateTime.Parse ("2021-01-01T00:00:00") , v.RePublished);
+        }
+
+        [Fact]
+        public void Casts_MissingDateTime_Property () {
+            Microformat mf = new Microformat { Type = new [] { "h-entry" }, Properties = new System.Collections.Generic.Dictionary<string, object[]> {  } };
+
+            Entry v = mf.AsVocab<Entry> ();
+
+            Assert.Null (v.RePublished);
+        }
+
+        [Fact]
         public void If_Property_IsScalar_Takes_FirstElement () {
             Microformat mf = new Microformat { Type = new [] { "h-entry" }, Properties = new System.Collections.Generic.Dictionary<string, object[]> { { "content", new [] { "one", "two" } } } };
 
